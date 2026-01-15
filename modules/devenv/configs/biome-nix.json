@@ -1,0 +1,38 @@
+{
+	"$schema": "https://biomejs.dev/schemas/2.2.2/schema.json",
+	"files": {
+		"includes": [
+			"**/*.ts",
+			"**/*.tsx",
+			"**/*.json",
+			"**/*.css",
+			"!.direnv",
+			"!.devenv",
+			".pre-commit-config.yaml",
+			"!/nix/**/*",
+			"!**/out",
+			"!**/node_modules",
+			"!**/dist",
+			"!**/result",
+			"!**/.next",
+			"!**/schema.generated.ts"
+		]
+	},
+	"linter": {
+		"rules": {
+			"a11y": {
+				"useAnchorContent": "off",
+				"useMediaCaption": "off"
+			},
+			"suspicious": {
+				"noDuplicateFontNames": "off"
+			},
+			"style": {
+				"noNonNullAssertion": "off"
+			},
+			"correctness": {
+				"useExhaustiveDependencies": "off"
+			}
+		}
+	}
+}

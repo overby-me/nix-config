@@ -1,0 +1,14 @@
+[default]
+extend-ignore-re = [
+  "Automattic",
+  "Tre",
+  "tre"
+]
+
+[files]
+extend-exclude = [
+   # Project is still in Danish
+  "projects/wiki/**",
+  "secrets/*.age"
+]
+ignore-hidden = false
