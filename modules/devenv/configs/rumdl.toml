@@ -1,3 +1,0 @@
-[global]
-line-length = 300
-disable = ["MD033", "MD004", "MD013", "MD047"]
