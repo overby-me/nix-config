@@ -1,0 +1,39 @@
+build host:
+    nixos-rebuild build --flake .#{{ host }} --print-build-logs
+
+switch host:
+    sudo nixos-rebuild switch --flake .#{{ host }} --print-build-logs
+
+deploy host:
+    colmena apply --on {{ host }} --verbose --impure
+
+deploy-build-on-target host:
+    colmena apply --on {{ host }} --build-on-target --verbose --impure
+
+deploy-all:
+    colmena apply --verbose --impure
+
+rekey:
+    cd secrets && agenix --rekey
+
+# Mobile device image building and flashing
+
+[private]
+_flake_dir := justfile_directory() / ".."
+
+decrypt-hostkey device:
+    mkdir -p /tmp/{{ device }}-hostkeys
+    rage -d -i ~/.ssh/id_ed25519 secrets/{{ device }}-host-key.age -o /tmp/{{ device }}-hostkeys/ssh_host_ed25519_key
+    chmod 600 /tmp/{{ device }}-hostkeys/ssh_host_ed25519_key
+    ssh-keygen -y -f /tmp/{{ device }}-hostkeys/ssh_host_ed25519_key > /tmp/{{ device }}-hostkeys/ssh_host_ed25519_key.pub
+
+build-boot device:
+    nix build --impure --print-build-logs -o result-{{ device }}-boot --expr 'let flake = builtins.getFlake "path:{{ _flake_dir }}"; nixosConfig = flake.nixosConfigurations.{{ device }}; in flake.lib.mkBootImage { dtb = "qcom/qcm6490-fairphone-fp5.dtb"; } nixosConfig nixosConfig.pkgs'
+
+build-rootfs device: (decrypt-hostkey device)
+    nix build --impure --print-build-logs -o result-{{ device }}-rootfs --expr 'let flake = builtins.getFlake "path:{{ _flake_dir }}"; nixosConfig = flake.nixosConfigurations.{{ device }}; in flake.lib.mkRootfsImage nixosConfig nixosConfig.pkgs { sshHostKeyDir = /tmp/{{ device }}-hostkeys; }'
+
+flash device: (build-boot device) (build-rootfs device)
+    fastboot flash boot result-{{ device }}-boot
+    fastboot flash userdata result-{{ device }}-rootfs
+    fastboot reboot
