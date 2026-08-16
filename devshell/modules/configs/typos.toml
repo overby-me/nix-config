@@ -20,7 +20,7 @@ extend-ignore-re = [
   "extrac[0-9]+",
   "extrac\\*",
   # XScreenSaver copyright headers and revision histories, transcribed verbatim
-  # into the Rust ports in web/homepage/xscreensaver.
+  # into the Rust ports in apps/homepage/xscreensaver.
   "[Oo]rignal",
   # quickhull.c's own comments, kept with the code they explain.
   "ajacent",
@@ -156,7 +156,7 @@ aranges = "aranges"
 Nd = "Nd"
 # controllen = libc msghdr field msg_controllen (sendmsg/recvmsg SCM_RIGHTS)
 controllen = "controllen"
-# CAF = Apple Core Audio Format (libsndfile container, rust/pipewire pw-cat)
+# CAF = Apple Core Audio Format (libsndfile container, safety/oxidized/pipewire pw-cat)
 caf = "caf"
 CAF = "CAF"
 # Alan W. Paeth, whose predictor is one of the five PNG scanline filters
@@ -233,47 +233,47 @@ extend-exclude = [
   # The Unicode block names unicrud carries, straight from the standard. They
   # are proper nouns in a hundred languages and several of them look like
   # English misspellings: Tai Tham, Vai, Cham, Miao.
-  "web/homepage/xscreensaver/src/hacks3d/unicodeblocks.rs",
+  "apps/homepage/xscreensaver/src/hacks3d/unicodeblocks.rs",
   # Euro-Office upstream patches (verbatim upstream code, incl. its own typos
   # like BUIDLER in build_3rdparty.py context lines).
   "pkgs/euro-office/patches/*",
-  "web/wiki/src/i18n.rs",
+  "apps/wiki/src/i18n.rs",
   "secrets/*.age",
   # Upstream compiler code with assembly mnemonics and domain-specific abbreviations
-  "rust/gcc/src/",
-  "rust/gcc/include/",
+  "safety/oxidized/gcc/src/",
+  "safety/oxidized/gcc/include/",
   # Auto-generated bash 5.3 help text (upstream wording triggers false positives)
-  "rust/bash/src/builtins/help_data.rs",
+  "safety/oxidized/bash/src/builtins/help_data.rs",
   # Registry index snapshot data (JSON lines fetched from index.crates.io);
   # contains target names like target_os = "nto" that look like typos
-  "nix/lib/cargo/index/",
-  "nix/lib/cargo/tests/fixtures/index/",
+  "platform/nix/lib/cargo/index/",
+  "platform/nix/lib/cargo/tests/fixtures/index/",
   # The Shadertoy programs, vendored verbatim from XScreenSaver. They are
   # shader source, and their local names are short and mathematical (ba, pa,
   # fre, lod, aas), so nearly every one reads as a misspelling.
-  "web/homepage/xscreensaver/glsl/",
+  "apps/homepage/xscreensaver/glsl/",
   # Likewise the 6502 demo programs, which are assembly listings.
-  "web/homepage/xscreensaver/images/m6502/",
+  "apps/homepage/xscreensaver/images/m6502/",
   # And the molecules, which are published crystallography files: the format
   # spells its bond records CONECT, and the chemistry is full of abbreviations.
-  "web/homepage/xscreensaver/molecules/",
+  "apps/homepage/xscreensaver/molecules/",
   # And the names of glsnake shapes, which come from the puzzle manual and
   # from the people who wrote the saver, spelling and all.
-  "web/homepage/xscreensaver/src/hacks3d/glsnake_models.rs",
+  "apps/homepage/xscreensaver/src/hacks3d/glsnake_models.rs",
   # And endgame's games, whose moves are algebraic chess notation rather than
   # words: Ba6 is a bishop, Rhe1 a rook, Nf3 a knight.
-  "web/homepage/xscreensaver/src/hacks3d/endgame_games.rs",
+  "apps/homepage/xscreensaver/src/hacks3d/endgame_games.rs",
   # The LLVM IR conformance corpus. Its comparison predicates are LangRef
   # keywords rather than English: olt, oge, une, uno and friends.
-  "rust/llvm/corpus/",
+  "safety/oxidized/llvm/corpus/",
   # The generated intrinsic tables. Every string in them is a name upstream
   # chose, measured from its own tests, so a spelling here is a fact rather
   # than a choice: `llvm.aarch64.sve.ld1.pn.x2` names SVE's predicate-as-
   # counter register and cannot be corrected to `on`.
-  "rust/llvm/crates/llvm-ir/src/intrinsic/",
+  "safety/oxidized/llvm/crates/llvm-ir/src/intrinsic/",
   # And the target triples, which are names too: cros is ChromeOS, sie is Sony
   # Interactive Entertainment, and i386-unknow-linux and x86_64-unknown-unkown
   # are malformed on purpose, being the inputs that prove a bad triple parses.
-  "rust/llvm/crates/llvm-ir/src/target_layout.rs",
+  "safety/oxidized/llvm/crates/llvm-ir/src/target_layout.rs",
 ]
 ignore-hidden = false

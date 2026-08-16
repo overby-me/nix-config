@@ -1,10 +1,10 @@
 # Run `touch .envrc && direnv export json` to apply changes to the repository.
 accept = [200, 201, 202, 203, 204, 206, 207, 429, 403]
 exclude_path = [
-  "nix/devshell/modules/configs/lychee.toml",
+  "platform/nix/devshell/modules/configs/lychee.toml",
   # Registry index snapshot data, not documents
-  "nix/lib/cargo/index",
-  "nix/lib/cargo/tests/fixtures/index",
+  "platform/nix/lib/cargo/index",
+  "platform/nix/lib/cargo/tests/fixtures/index",
 ]
 exclude = [
   '\$\{',
@@ -37,10 +37,10 @@ exclude = [
   "https://x.com/",
   'box2d\.org/files/',
   # Zvi Har'El's home page, named in the kaleido copyright notice that
-  # web/homepage/xscreensaver/src/runtime/kaleido.rs keeps verbatim. The site
+  # apps/homepage/xscreensaver/src/runtime/kaleido.rs keeps verbatim. The site
   # serves a certificate this machine's root store does not trust.
   'math\.technion\.ac\.il/~rl',
-  # Placeholder URLs in rust/curl comments and test fixtures: the literal
+  # Placeholder URLs in safety/oxidized/curl comments and test fixtures: the literal
   # hosts "host"/"proxy.example", the literal port ":port", and ellipsis
   # paths are examples, not real links.
   "^https?://(user1@)?host(/|$)",
@@ -66,7 +66,7 @@ exclude = [
   # the bare base 404s and is not link-checkable.
   'go\.dev/dl',
   # Author home pages cited in XScreenSaver copyright headers, transcribed
-  # verbatim into the Rust ports in web/homepage/xscreensaver. Some are from
+  # verbatim into the Rust ports in apps/homepage/xscreensaver. Some are from
   # the nineties and no longer resolve; the headers stay as upstream wrote
   # them either way.
   'www\.organic\.com/staff/',

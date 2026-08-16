@@ -28,13 +28,13 @@
       };
       biome = {
         enable = true;
-        # web/wiki used to be excluded here, on the grounds that its incidental
+        # apps/wiki used to be excluded here, on the grounds that its incidental
         # JS is hand-authored and governed by the app's own gates rather than by
         # biome. That was not true of the whole toolchain: `nix fmt` maps *.js to
-        # biome (nix/formatters.nix) for every path in the tree, and biome
+        # biome (platform/nix/formatters.nix) for every path in the tree, and biome
         # formats a file handed to it explicitly whatever `files.includes` says.
         # So checks.formatting DID format these, this hook did not, and a new .js
-        # under web/wiki passed every local gate and then failed CI -- which is
+        # under apps/wiki passed every local gate and then failed CI -- which is
         # exactly how assets/heic-worker.js reached main unformatted.
         #
         # The hook now sees what the check sees. Whichever way that disagreement
@@ -54,15 +54,15 @@
       };
       typos = {
         enable = true;
-        settings.configPath = "./nix/devshell/modules/configs/typos.toml";
-        # Every typos hit in web/wiki was a false positive on technical content:
+        settings.configPath = "./platform/nix/devshell/modules/configs/typos.toml";
+        # Every typos hit in apps/wiki was a false positive on technical content:
         # plural all-caps SQL keywords (a trailing lowercase "s" confuses the
         # tokenizer), percent-encoded UTF-8 test fixtures, and ported short
         # identifiers. Allow-listing those tokens in the shared typos.toml would
         # mask real typos monorepo-wide, so scope typos to skip the app instead
         # (its i18n strings were already excluded). deslop and lychee, which DO
         # find real issues here, stay enabled with tuned configs.
-        excludes = ["^web/wiki/"];
+        excludes = ["^apps/wiki/"];
       };
       nickel-format = {
         enable = true;
@@ -75,7 +75,7 @@
         enable = true;
         name = "tangled-workflows";
         entry = "${pkgs.writeShellScript "tangled-workflows-generate" ''
-          if ! echo "$@" | ${pkgs.gnugrep}/bin/grep -q '\.tangled/workflows\.ncl\|nickel/contracts/tangled-workflow/'; then
+          if ! echo "$@" | ${pkgs.gnugrep}/bin/grep -q '\.tangled/workflows\.ncl\|dev/nickel/contracts/tangled-workflow/'; then
             exit 0
           fi
           mkdir -p .tangled/workflows
@@ -207,19 +207,19 @@
       };
       clippy = {
         enable = true;
-        # rust/fe-c pins a nightly toolchain and its fe-c-driver crate uses
+        # safety/fe-c pins a nightly toolchain and its fe-c-driver crate uses
         # `#![feature(rustc_private)]`, which the stable `pkgs.cargo` here
         # cannot build. Its clippy runs on the pinned nightly via the
         # `fe-c-clippy` flake check (--all-features) instead.
         #
-        # web/wiki/vendor is upstream code held at a pinned commit (see
+        # apps/wiki/vendor is upstream code held at a pinned commit (see
         # vendor/ooxml/README.md), so its lints are not ours to answer and
         # fixing them is divergence we would have to re-apply on every
         # re-vendor. It has never been clean; it stayed invisible only because
         # nothing touched those files. `nix fmt` reaching them is what put the
         # crate in this hook's scope, since the hook lints whole crates rather
         # than the changed file.
-        excludes = ["^rust/fe-c/" "^web/wiki/vendor/"];
+        excludes = ["^safety/fe-c/" "^apps/wiki/vendor/"];
         entry = "${pkgs.writeShellScript "clippy-multi-project" ''
           # Determine which Cargo projects contain changed .rs files.
           # Arguments are the changed .rs file paths passed by pre-commit.

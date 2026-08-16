@@ -18,8 +18,8 @@ rekey:
 
 # Mobile device image building and flashing
 
-# The flake root is two levels up from nix/nixos, not one. With a single ".."
-# this landed on nix/, where `getFlake "path:..."` finds no flake.nix.
+# The flake root is two levels up from platform/nix/nixos, not one. With a single ".."
+# this landed on platform/nix/, where `getFlake "path:..."` finds no flake.nix.
 [private]
 _flake_dir := justfile_directory() / ".." / ".."
 
