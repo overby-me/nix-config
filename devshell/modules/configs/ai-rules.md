@@ -89,7 +89,7 @@
   `nix flake check` instantiates all of them in a single evaluator whose peak
   memory exceeds 30 GiB. `--max-jobs`/`--no-build` do not help. Run
   `just check` instead: it invokes the bounded-memory `flake-check` tool
-  (`platform/nix/packages/flake-check.nix`), which evaluates attributes in memory-capped
+  (`platform/nix/config/packages/flake-check.nix`), which evaluates attributes in memory-capped
   `nix-eval-jobs` workers and then builds only the uncached checks, one job at
   a time. Tune it via environment variables: `CHECK_FRAGMENT` (evaluate a
   different fragment, e.g. `CHECK_FRAGMENT=devShells.x86_64-linux`), `WORKERS`
@@ -100,11 +100,11 @@
   special handling. Expect a full `just check` to take on the order of an
   hour; do not start it casually.
 - **Run any `jj` command (e.g. `jj status`) before Nix flake operations when you've created new files.** Nix flakes only see files tracked by git. In a jj colocated repo, jj automatically snapshots the working directory (updating the git index) on every `jj` command. Unlike plain git, you do NOT need to manually `git add` files — just ensure at least one `jj` command has run since creating the file.
-- **Run `touch .envrc && direnv export json` after changing devshell modules or configs.** Files in `platform/nix/devshell/modules/` and `platform/nix/devshell/modules/configs/` are evaluated on devshell entry. Changes to these files (e.g. the config `shellHook`, git-hooks, packages) won't take effect until you run `touch .envrc && direnv export json`. Note: `direnv reload` only touches `.envrc` and defers to a shell prompt hook that doesn't fire in non-interactive contexts. `direnv export json` directly triggers the full re-evaluation.
+- **Run `touch .envrc && direnv export json` after changing devshell modules or configs.** Files in `platform/nix/config/devshell/modules/` and `platform/nix/config/devshell/modules/configs/` are evaluated on devshell entry. Changes to these files (e.g. the config `shellHook`, git-hooks, packages) won't take effect until you run `touch .envrc && direnv export json`. Note: `direnv reload` only touches `.envrc` and defers to a shell prompt hook that doesn't fire in non-interactive contexts. `direnv export json` directly triggers the full re-evaluation.
 
 ## Devshell config files
 
-- **Root config files are copied from `platform/nix/devshell/modules/configs/` — never edit the root copies directly.** The devshell config `shellHook` (in `platform/nix/devshell/modules/configs/default.nix`) populates the project root on every shell entry. All files are copied (via `install -m 644`) as real, writable files rather than symlinked into the read-only Nix store, so tools and AI agents are never prompted for permission to follow symlinks into `/nix/store`. The mapping is:
+- **Root config files are copied from `platform/nix/config/devshell/modules/configs/` — never edit the root copies directly.** The devshell config `shellHook` (in `platform/nix/config/devshell/modules/configs/default.nix`) populates the project root on every shell entry. All files are copied (via `install -m 644`) as real, writable files rather than symlinked into the read-only Nix store, so tools and AI agents are never prompted for permission to follow symlinks into `/nix/store`. The mapping is:
 
   | Root file | Source | Method |
   |-|-|-|

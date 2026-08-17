@@ -1,4 +1,4 @@
-# Builds the default devShell from pure devshell modules (platform/nix/devshell), and
+# Builds the default devShell from pure devshell modules (platform/nix/config/devshell), and
 # folds every other named devShell into it via inputsFrom so `nix develop`
 # gives the union of all project shells plus the shared tooling and git-hooks.
 #

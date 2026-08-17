@@ -31,7 +31,7 @@
         # apps/wiki used to be excluded here, on the grounds that its incidental
         # JS is hand-authored and governed by the app's own gates rather than by
         # biome. That was not true of the whole toolchain: `nix fmt` maps *.js to
-        # biome (platform/nix/formatters.nix) for every path in the tree, and biome
+        # biome (platform/nix/config/formatters.nix) for every path in the tree, and biome
         # formats a file handed to it explicitly whatever `files.includes` says.
         # So checks.formatting DID format these, this hook did not, and a new .js
         # under apps/wiki passed every local gate and then failed CI -- which is
@@ -54,7 +54,7 @@
       };
       typos = {
         enable = true;
-        settings.configPath = "./platform/nix/devshell/modules/configs/typos.toml";
+        settings.configPath = "./platform/nix/config/devshell/modules/configs/typos.toml";
         # Every typos hit in apps/wiki was a false positive on technical content:
         # plural all-caps SQL keywords (a trailing lowercase "s" confuses the
         # tokenizer), percent-encoded UTF-8 test fixtures, and ported short

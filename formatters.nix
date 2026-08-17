@@ -1,5 +1,5 @@
 # Formatters for `nix fmt`, mirroring the formatting hooks in
-# platform/nix/devshell/modules/git-hooks.nix.
+# platform/nix/config/devshell/modules/git-hooks.nix.
 #
 # flakelight dispatches per file: each key is a shell `case` pattern matched
 # against the file's basename, and the command is invoked with the path as its

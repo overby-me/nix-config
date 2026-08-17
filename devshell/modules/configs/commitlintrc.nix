@@ -1,7 +1,7 @@
 # Generate commitlintrc.yml with scope options dynamically derived from
 # the Nix flake source tree.
 # Discovers top-level files (e.g. "flake.nix") and directories nested up to
-# `maxDepth` segments deep (e.g. "nix", "platform/nix/nixos", "platform/nix/nixos-configurations").
+# `maxDepth` segments deep (e.g. "nix", "platform/nix/config/nixos", "platform/nix/config/nixos-configurations").
 {
   pkgs,
   lib,
@@ -9,7 +9,7 @@
 }: let
   # Path segments a scope may have. Two was too blunt for a tree where a
   # top-level directory is a whole platform: every NixOS change read as
-  # `platform/nix/nixos` whether it touched one host or the module system. Three
+  # `platform/nix/config/nixos` whether it touched one host or the module system. Three
   # separates them. Raising this further is cheap in Nix and expensive to read,
   # since the enum below is what a human scrolls when they forget a name.
   maxDepth = 3;

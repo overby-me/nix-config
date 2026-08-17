@@ -236,9 +236,12 @@ extend-exclude = [
   "apps/homepage/xscreensaver/src/hacks3d/unicodeblocks.rs",
   # Euro-Office upstream patches (verbatim upstream code, incl. its own typos
   # like BUIDLER in build_3rdparty.py context lines).
-  "pkgs/euro-office/patches/*",
+  "**/euro-office/patches/*",
   "apps/wiki/src/i18n.rs",
-  "secrets/*.age",
+  # Age ciphertext is base64, which reads as dense misspelling. Matched at any
+  # depth: anchoring this to one directory made it stop matching the moment
+  # the secrets moved, and the files are the same shape wherever they live.
+  "**/secrets/*.age",
   # Upstream compiler code with assembly mnemonics and domain-specific abbreviations
   "safety/oxidized/gcc/src/",
   "safety/oxidized/gcc/include/",
@@ -246,8 +249,8 @@ extend-exclude = [
   "safety/oxidized/bash/src/builtins/help_data.rs",
   # Registry index snapshot data (JSON lines fetched from index.crates.io);
   # contains target names like target_os = "nto" that look like typos
-  "platform/nix/lib/cargo/index/",
-  "platform/nix/lib/cargo/tests/fixtures/index/",
+  "platform/nix/config/lib/cargo/index/",
+  "platform/nix/config/lib/cargo/tests/fixtures/index/",
   # The Shadertoy programs, vendored verbatim from XScreenSaver. They are
   # shader source, and their local names are short and mathematical (ba, pa,
   # fre, lod, aas), so nearly every one reads as a misspelling.

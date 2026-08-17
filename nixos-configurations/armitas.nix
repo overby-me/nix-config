@@ -18,7 +18,7 @@
 #      that cannot be recovered afterwards.
 #   2. Disable Secure Boot in UEFI (hold volume-up while powering on).
 #   3. Build and write the installer:
-#        just -f platform/nix/nixos/justfile build-iso
+#        just -f platform/nix/config/nixos/justfile build-iso
 #        sudo dd if=result-armitas-iso/iso/*.iso of=/dev/sdX bs=4M status=progress
 #   4. Boot it.  Putting USB at the top of the boot order is not enough: hold
 #      volume-up and swipe left on the USB entry each time.  The ISO carries
@@ -26,7 +26,7 @@
 #   5. On the tablet, join a network with `nmtui` and read off its address
 #      with `ip -brief addr`.
 #   6. From this workstation, one command does the rest:
-#        just -f platform/nix/nixos/justfile install-armitas <tablet-ip>
+#        just -f platform/nix/config/nixos/justfile install-armitas <tablet-ip>
 #      It partitions and formats per the disko layout below, copies the
 #      closure built here, installs, and reboots.
 #
@@ -54,7 +54,7 @@
     # encrypted to this machine and boot-time decryption would fail.
     # To turn this on: install, then add the generated
     # /etc/ssh/ssh_host_ed25519_key.pub to nixos/secrets/publicKeys.nix as
-    # `armitas-ssh-ed25519`, include it in `all`, run `just -f platform/nix/nixos/justfile
+    # `armitas-ssh-ed25519`, include it in `all`, run `just -f platform/nix/config/nixos/justfile
     # rekey`, and flip this to true.
     hasSecrets = false;
   };
