@@ -57,10 +57,32 @@ dir: {
   # entries arrive as a set or as a list is decided by the option's own type,
   # because a list-valued output like withOverlays wants the values and an
   # attribute-valued one wants them keyed.
+  # An option set - `nixpkgs`, which only exists because `nixpkgs.config`
+  # does - is not an output and has no type to ask about.
+  isOption = name: options.${name} ? type;
+
+  # Whether an option ultimately holds modules, found by walking its type
+  # rather than by naming the option. `lazyAttrsOf module` is wrapped in a
+  # coercedTo by optCallWith, so the module type is never the outer one.
+  holdsModules = type:
+    type.name
+    == "module"
+    || builtins.any holdsModules (attrValues (type.nestedTypes or {}));
+
   valueFor = name: let
     path = dir + "/${kebab name}";
-    asPaths = elem name (config.nixDirPathAttrs or []);
     type = options.${name}.type;
+    # A module keeps the path it came from. Import it and what lands in the
+    # output is an anonymous function, which the module system cannot tell
+    # apart from any other: the same module reaching evalModules twice then
+    # declares its options twice and evaluation fails. A path has identity,
+    # and names the file in an error besides.
+    #
+    # Derived from the type rather than listed, because listing it got two of
+    # the three module collections and missed nixosModules, which has exactly
+    # the type darwinModules has. Nothing had broken yet only because nothing
+    # imported one of them by two routes.
+    asPaths = holdsModules type || elem name (config.nixDirPathAttrs or []);
   in
     if pathExists (dir + "/${kebab name}.nix")
     then [(import (dir + "/${kebab name}.nix"))]
@@ -84,16 +106,14 @@ dir: {
 
   # Everything the flake can output, minus what describes the mechanism.
   outputNames =
-    subtractLists ["_module" "nixDir" "nixDirAliases" "nixDirPathAttrs"]
-    (attrNames options);
+    builtins.filter isOption
+    (subtractLists ["_module" "nixDir" "nixDirAliases" "nixDirPathAttrs"]
+      (attrNames options));
 in {
-  # Which options want the path to an entry rather than the imported value.
-  # Declared here because this is what reads it: a directory of NixOS modules
-  # is imported by the configuration that uses it, not by us.
-  options.nixDirPathAttrs = lib.mkOption {
-    type = lib.types.listOf lib.types.str;
-    default = [];
-  };
-
+  # nixDirPathAttrs is read here but declared in mk-flake.nix, because a
+  # module may set it whether or not anyone scans a directory. Declaring it
+  # here made it exist only for a consumer that had set `outputDirs`, so a
+  # module setting it failed with "the option does not exist" for everyone
+  # else. This tree always sets outputDirs, which is why nothing here saw it.
   config = genAttrs outputNames (name: mkMerge (valueFor name));
 }

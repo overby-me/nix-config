@@ -2,10 +2,10 @@
 #
 # This is what flakelight did for us, kept because the module system is worth
 # having and rewritten because the rest was not ours. A published repo depends
-# on nix-project and nixpkgs, and on nothing that exists to bridge between
+# on nix-workspace and nixpkgs, and on nothing that exists to bridge between
 # them.
 #
-# What is deliberately absent: nixDir, which platform/nix/project/outputs.nix
+# What is deliberately absent: nixDir, which platform/nix/workspace/outputs.nix
 # already replaced with the same rule projects follow, and the multi-formatter
 # builder, because a formatter here is one package and a shell script that
 # dispatches on file extension is not worth carrying.
@@ -497,6 +497,24 @@
         default = {};
       };
 
+      # Which outputs want the path to a directory entry rather than the
+      # value imported from it, for outputs whose value *is* a path: a
+      # home-manager configuration is a file handed to home-manager, which
+      # imports it itself. Module-valued outputs get a path without asking,
+      # decided from their type in outputs.nix.
+      #
+      # Declared here rather than in outputs.nix, which is the only thing
+      # that reads it, because a module may set it whether or not anyone
+      # scans a directory - and outputs.nix is imported only by a consumer
+      # that sets `outputDirs`. Owning the declaration there made a module
+      # that set it fail with "the option `nixDirPathAttrs' does not exist"
+      # for every consumer that did not. This tree always sets outputDirs,
+      # which is why it took publishing the framework to find it.
+      nixDirPathAttrs = mkOption {
+        type = types.listOf types.str;
+        default = [];
+      };
+
       nixosModules = mkOption {
         type = projectTypes.optCallWith moduleArgs (types.lazyAttrsOf projectTypes.module);
         default = {};
@@ -521,11 +539,22 @@
         default = {};
       };
 
-      # Modules written against this framework, exported so another flake can
-      # import one. The directory that feeds it is `flake-modules`, which is
-      # also what a workspace imports through `moduleDirs`: exporting a
+      # The module this flake *is*. An integration provides one, so this is
+      # what it says, and it becomes workspaceModules.default.
+      #
+      # Both names, and that relationship between them, are flakelight's and
+      # flake-parts': a flake offering one module exports the singular
+      # (treefmt-nix and devshell export flakeModule), a flake offering
+      # several exports the plural.
+      workspaceModule = mkOption {
+        type = types.nullOr projectTypes.module;
+        default = null;
+      };
+
+      # Modules this flake *offers*, by name. The directory that feeds it is
+      # `workspace-modules`, which is also what a workspace imports: offering a
       # module and using it are different acts.
-      flakeModules = mkOption {
+      workspaceModules = mkOption {
         type = types.lazyAttrsOf projectTypes.module;
         default = {};
       };
@@ -677,7 +706,10 @@
         (optionalAttrs (config.nixosModules != {}) {inherit (config) nixosModules;})
         (optionalAttrs (config.homeModules != {}) {inherit (config) homeModules;})
         (optionalAttrs (config.templates != {}) {inherit (config) templates;})
-        (optionalAttrs (config.flakeModules != {}) {inherit (config) flakeModules;})
+        (optionalAttrs (config.workspaceModule != null) {
+          workspaceModules.default = config.workspaceModule;
+        })
+        (optionalAttrs (config.workspaceModules != {}) {inherit (config) workspaceModules;})
         (optionalAttrs (config.description != null) {inherit (config) description;})
       ];
   };

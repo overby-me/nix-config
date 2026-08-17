@@ -1,4 +1,4 @@
-# The other half of nix-project. `project` is one published unit, and builds
+# The other half of nix-workspace. `project` is one published unit, and builds
 # a whole flake for it; `workspace` is the tree those units live in, and finds
 # them.
 #
@@ -111,25 +111,56 @@ root: cfg: let
         && isNixFile name)
       (attrNames (readDir dir)));
 
-  # A `flake-modules` directory inside an output tree holds modules of this
-  # framework. They are exported as `flakeModules` because the directory is
+  # A `workspace-modules` directory inside an output tree holds modules of this
+  # framework. They are exported as `workspaceModules` because the directory is
   # named after that output, and imported here because a tree that ships
   # them means them: keeping the two apart would only mean saying the
   # directory's name twice.
+  # An integration is a flake that carries a module and the input that module
+  # needs. Taking one is how a tree gets both without declaring the pin
+  # itself, and not taking one is how it never fetches it.
+  #
+  # Found rather than listed: an input that exports a module of this
+  # framework is one, so declaring the input is the whole of taking it. A
+  # list beside the declarations would be a second place to add a line, and
+  # eventually a place to forget one.
+  #
+  # Either name counts. A flake offering one module exports `workspaceModule`,
+  # the way treefmt-nix and devshell export `flakeModule`; a flake offering
+  # several exports `workspaceModules`, and its `default` is the one to take.
+  # `self` is skipped, and not as a tidiness: asking whether this flake
+  # exports workspaceModules means evaluating its outputs, which is what
+  # imports are being computed for.
+  # nix-workspace itself is skipped too. Its `workspaceModules.default` is the
+  # module that builds one published crate, which a workspace must not import
+  # - it demands `project.name`, so taking it fails with "the option
+  # `project.name' was accessed but has no value defined". This tree never saw
+  # that because it imports the framework by path rather than as an input; an
+  # outside consumer has no such choice, so publishing is what found it. The
+  # discriminator is `workspace`, the function only the framework exports.
+  fromIntegrations = let
+    candidates =
+      lib.filterAttrs (_: i: !(isAttrs i && i ? workspace))
+      (removeAttrs (cfg.inputs or {}) ["self"]);
+  in
+    map (i: i.workspaceModule or i.workspaceModules.default)
+    (filter (i: isAttrs i && (i ? workspaceModule || i ? workspaceModules.default))
+      (builtins.attrValues candidates));
+
   fromModuleDirs =
     concatMap modulesIn
-    (filter pathExists (map (d: d + "/flake-modules") outputDirs));
+    (filter pathExists (map (d: d + "/workspace-modules") outputDirs));
 
   # A tree of outputs, replacing flakelight's nixDir with the same rule
   # projects follow: the path is the address. See ./outputs.nix.
   fromOutputDirs = map (d: import ./outputs.nix d) (cfg.outputDirs or []);
 in
   mkFlake root (
-    (removeAttrs cfg ["projects" "outputDirs"])
+    (removeAttrs cfg ["projects" "outputDirs" "integrations"])
     // {
       # Explicit first, then whole directories, then projects. A workspace
       # can still name one module: the four lib checks are a file inside a
       # library rather than a directory of modules.
-      imports = (cfg.imports or []) ++ fromOutputDirs ++ fromModuleDirs ++ discovered;
+      imports = (cfg.imports or []) ++ fromOutputDirs ++ fromIntegrations ++ fromModuleDirs ++ discovered;
     }
   )

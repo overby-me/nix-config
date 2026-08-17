@@ -21,6 +21,18 @@
   # and has no pkgs to resolve them against.
   resolve = pkgs: names: map (n: pkgs.${n}) names;
 in {
+  # What lets the module system recognise two copies of this as one module.
+  #
+  # A module has identity only if it is a path or carries a key. This one is
+  # neither by nature: it is a function partially applied to gitHooks, so it
+  # cannot be a path, and a bare function has no identity at all - the same
+  # function value reaching evalModules twice declares every option in it
+  # twice, and evaluation fails with "the option `project' is already
+  # declared". That is what a second input exporting this module produces,
+  # and it is why the integrations could not be selected through `?dir=`.
+  # `_file` does not do this; it names a module for error messages only.
+  key = "nix-workspace/module.nix";
+
   options.project = {
     name = mkOption {
       type = types.str;
@@ -101,6 +113,30 @@ in {
       '';
     };
 
+    aliases = mkOption {
+      type = types.attrsOf types.str;
+      default = {};
+      example = {
+        gawk = "awk";
+        sh = "bash";
+      };
+      description = ''
+        Extra names for a binary this crate builds, as alias -> target.
+
+        These tools are drop-in replacements, and the name they replace is
+        usually not the one cargo produces: awk also answers to gawk, bash to
+        sh, and a multicall binary answers to all thirty-four of PipeWire's
+        tool names. The monorepo's own build has always added them; without
+        this a published repo shipped only what Cargo.toml declares as a
+        [[bin]], which for a multicall crate is a binary with none of the
+        names it dispatches on and so of no use to anyone who cloned it.
+
+        The target is a binary cargo built, not another alias: linking an
+        alias to an alias works but leaves the published repo depending on
+        an ordering this does not promise.
+      '';
+    };
+
     hooks = mkOption {
       type = types.attrsOf types.anything;
       default = {
@@ -167,6 +203,20 @@ in {
         // (cfg.env pkgs)
         // lib.optionalAttrs (cfg.cargoTestFlags != []) {
           inherit (cfg) cargoTestFlags;
+        }
+        # Failing loudly on a target that is not there, because the monorepo
+        # learned that the other way round: three packages symlinked every
+        # one of their tool names to a binary that did not exist, and nothing
+        # noticed until nixpkgs' noBrokenSymlinks turned it into an error.
+        // lib.optionalAttrs (cfg.aliases != {}) {
+          postInstall = lib.concatStringsSep "\n" (
+            lib.mapAttrsToList (alias: target: ''
+              test -e "$out/bin/${target}" \
+                || { echo "aliases.${alias} names ${target}, which this crate does not build" >&2; exit 1; }
+              ln -s "$out/bin/${target}" "$out/bin/${alias}"
+            '')
+            cfg.aliases
+          );
         }
         # Both are needed and do different jobs: cargoRoot tells the setup
         # hook where Cargo.lock and the vendor config belong, buildAndTestSubdir

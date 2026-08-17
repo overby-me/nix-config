@@ -86,7 +86,6 @@ in {
     })
 
     {
-      nixDirPathAttrs = ["systemModules"];
     }
   ];
 }

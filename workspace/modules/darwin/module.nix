@@ -102,7 +102,5 @@ in {
         configs
       );
     })
-
-    {nixDirPathAttrs = ["darwinModules"];}
   ];
 }

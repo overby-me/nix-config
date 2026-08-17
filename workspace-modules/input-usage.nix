@@ -16,13 +16,26 @@
 # Checked by grepping the source rather than by evaluating it, because an
 # input's absence cannot be observed from inside the evaluation that would
 # have used it.
+#
+# One kind of use is invisible to a grep: the workspace takes every input
+# that exports a project module, so an integration is consumed without
+# `inputs.project-darwin` appearing anywhere. That is not a hole in the
+# reasoning above - absence is what cannot be evaluated, and this is a
+# presence - so those are recognised by the same predicate the workspace
+# uses, and only the rest are grepped for.
 {
   config,
+  lib,
   src,
   ...
 }: {
   checks.input-usage = pkgs: let
-    names = builtins.attrNames config.inputs;
+    integrations =
+      builtins.attrNames
+      (lib.filterAttrs
+        (_: i: builtins.isAttrs i && (i ? workspaceModule || i ? workspaceModules.default))
+        config.inputs);
+    names = lib.subtractLists integrations (builtins.attrNames config.inputs);
   in
     pkgs.runCommand "check-input-usage" {} ''
       cd ${src}
@@ -31,11 +44,21 @@
         # `self` is nix's own, not ours to justify.
         [ "$name" = "self" ] && continue
 
+        # `|| true` because a search that matches nothing exits non-zero, and
+        # stdenv runs this under `set -o pipefail`: without it the first input
+        # that is followed rather than read - flake-compat is the one - killed
+        # the whole check before reaching the `followed` test written for it.
+        # Builder output is not surfaced here, so it failed with no message
+        # and validated nothing.
+        #
+        # A declaration is `<name>.url = ...`, never `inputs.<name>`, so a
+        # read inside a flake.nix counts like any other - which is how the
+        # sub-flake of pins justifies itself.
         read_somewhere=$(${pkgs.ripgrep}/bin/rg -l --no-messages \
-          -g '!flake.nix' -g '*.nix' -g '*.nu' -g '*.yml' \
-          "inputs\.$name\b" . | head -1)
+          -g '*.nix' -g '*.nu' -g '*.yml' \
+          "inputs\.$name\b" . || true)
         followed=$(${pkgs.ripgrep}/bin/rg --no-messages \
-          "follows = \"$name\"" flake.nix | head -1)
+          "follows = \"$name\"" -g '*.nix' . || true)
 
         if [ -z "$read_somewhere" ] && [ -z "$followed" ]; then
           unused="$unused $name"

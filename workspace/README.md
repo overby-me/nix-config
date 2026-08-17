@@ -1,12 +1,12 @@
-# Nix Project
+# Nix Workspace
 
 <!-- publish:begin -->
 > Part of the [overby.me monorepo](https://tangled.org/overby.me/overby.me), where this lives in
-> [`platform/nix/project`](https://tangled.org/overby.me/overby.me/tree/main/platform/nix/project) and where all development happens.
+> [`platform/nix/workspace`](https://tangled.org/overby.me/overby.me/tree/main/platform/nix/workspace) and where all development happens.
 >
 > It is also published on its own, as
-> [tangled.org/overby.me/nix-project](https://tangled.org/overby.me/nix-project) and
-> [github.com/overby-me/nix-project](https://github.com/overby-me/nix-project). Both
+> [tangled.org/overby.me/nix-workspace](https://tangled.org/overby.me/nix-workspace) and
+> [github.com/overby-me/nix-workspace](https://github.com/overby-me/nix-workspace). Both
 > are read-only mirrors, rebuilt from the monorepo with
 > [josh](https://github.com/josh-project/josh): a commit made to either is
 > overwritten by the next sync, so please open issues and pull requests on the
@@ -32,7 +32,7 @@ flake is the call and whatever is different about that project:
 {
   description = "A GNU sed-compatible stream editor written in Rust";
 
-  inputs.project.url = "git+https://tangled.org/overby.me/nix-project";
+  inputs.project.url = "git+https://tangled.org/overby.me/nix-workspace";
 
   outputs = inputs:
     inputs.project ./. {
@@ -47,7 +47,7 @@ so nixpkgs, flakelight and the hooks are the same in every published repo
 without any of them naming a revision, and each of their locks has one direct
 input.
 
-The module is also exported as `flakeModules.default`, for a flake that
+The module is also exported as `workspaceModules.default`, for a flake that
 needs to compose it with modules of its own.
 
 ## Workspaces
@@ -58,11 +58,11 @@ imported, so a monorepo's root flake stops carrying a list that drifts.
 
 ```nix
 outputs = inputs:
-  import ./platform/nix/project/workspace.nix ./. {
+  import ./platform/nix/workspace/workspace.nix ./. {
     inherit inputs;
     systems = ["x86_64-linux"];
     nixDir = ./platform/nix;
-    imports = [./platform/nix/flake-modules/lib.nix];  # what is not a project
+    imports = [./platform/nix/workspace-modules/lib.nix];  # what is not a project
     projects.exclude = ["platform/nix"];
   };
 ```
@@ -305,7 +305,7 @@ consuming flake supplies the `rust-overlay` overlay for it, through
 
 ```nix
 inputs = {
-  project.url = "git+https://tangled.org/overby.me/nix-project";
+  project.url = "git+https://tangled.org/overby.me/nix-workspace";
   rust-overlay.url = "github:oxalica/rust-overlay";
 };
 
@@ -322,6 +322,6 @@ repo fetch it for the one project that pins a toolchain.
 
 ## Contributing
 
-Development happens in the monorepo, in `platform/nix/project`. This repo is a
+Development happens in the monorepo, in `platform/nix/workspace`. This repo is a
 read-only mirror, rebuilt by josh, and a commit made here is overwritten by the
 next sync.
